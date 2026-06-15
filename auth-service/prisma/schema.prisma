@@ -17,6 +17,7 @@ model User {
   is_verified   Boolean   @default(false)
   last_login    DateTime?
   created_at    DateTime  @default(now())
-
+  refresh_token_hash String?
+  session_expires_at DateTime?
   @@map("users")
 }

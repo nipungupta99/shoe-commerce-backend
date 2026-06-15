@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, UseGuards, Req } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 @Controller()
 export class AppController {
   constructor(
@@ -27,5 +27,10 @@ export class AppController {
     return await firstValueFrom(
       this.authClient.send('login_user', body),
     );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Req() req: any) {
+    return req.user;
   }
 }

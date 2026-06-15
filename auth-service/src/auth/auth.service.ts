@@ -74,19 +74,52 @@ export class AuthService {
         }
         console.log('Password verified successfully for email:', data.email);
 
-        const payload = {
+        const accessPayload = {
             sub: user.id,
             email: user.email,
             role: user.role,
         };
 
-        console.log('Signing token with payload:', payload);
-        const accessToken = await this.jwtService.signAsync(payload);
-        console.log('Token signed successfully');
+        const refreshPayload = {
+            sub: user.id,
+        };
+
+        const sessionExpiresAt = new Date();
+
+        sessionExpiresAt.setDate(
+            sessionExpiresAt.getDate() + 7,
+        );
+        const accessToken = await this.jwtService.signAsync(
+            accessPayload,
+            {
+                expiresIn: '15m',
+            },
+        );
+
+        const refreshToken = await this.jwtService.signAsync(
+            refreshPayload,
+            {
+                expiresIn: '7d',
+            },
+        );
+
+        const refreshTokenHash =
+            await bcrypt.hash(refreshToken, 10);
+
+        await this.prisma.user.update({
+            where: {
+                id: user.id,
+            },
+            data: {
+                refresh_token_hash: refreshTokenHash,
+                session_expires_at: sessionExpiresAt
+            },
+        });
 
         return {
             success: true,
             message: 'Login successful',
+            refresh_token: refreshToken,
             access_token: accessToken,
             user: {
                 id: user.id,

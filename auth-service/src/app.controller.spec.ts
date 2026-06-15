@@ -1,22 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AuthService } from './auth/auth.service';
 
 describe('AppController', () => {
   let appController: AppController;
+  let mockAuthService: Partial<AuthService>;
 
   beforeEach(async () => {
+    mockAuthService = {};
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
+      providers: [
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
+        },
+      ],
     }).compile();
 
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  describe('ping', () => {
+    it('should return "Auth service alive"', () => {
+      expect(appController.ping()).toEqual({ message: 'Auth service alive' });
     });
   });
 });
+
