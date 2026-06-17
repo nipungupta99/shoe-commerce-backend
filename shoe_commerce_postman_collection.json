@@ -1,0 +1,259 @@
+{
+	"info": {
+		"_postman_id": "8c59f237-775c-4d2d-86f3-e5d0b98eb537",
+		"name": "Shoe Commerce - Auth & Gateway",
+		"description": "Postman collection for API Gateway and Auth Service integration testing in the Shoe Commerce backend system, organized into folders.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"description": "Requests relating to user authentication, registration, and login.",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"shoelover\",\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Registers a new user in the system database via Auth Service."
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"if (response) {",
+									"    if (response.access_token) {",
+									"        pm.collectionVariables.set(\"access_token\", response.access_token);",
+									"        console.log(\"Saved access_token to collection variables.\");",
+									"    }",
+									"    if (response.refresh_token) {",
+									"        pm.collectionVariables.set(\"refresh_token\", response.refresh_token);",
+									"        console.log(\"Saved refresh_token to collection variables.\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Logs in the registered user and automatically extracts/saves both access and refresh tokens to the collection variables."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"if (response) {",
+									"    if (response.access_token) {",
+									"        pm.collectionVariables.set(\"access_token\", response.access_token);",
+									"        console.log(\"Updated access_token in collection variables.\");",
+									"    }",
+									"    if (response.refresh_token) {",
+									"        pm.collectionVariables.set(\"refresh_token\", response.refresh_token);",
+									"        console.log(\"Updated refresh_token in collection variables.\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/refresh",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Requests new access and refresh tokens using the saved refresh token."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"if (response && response.success) {",
+									"    pm.collectionVariables.set(\"access_token\", \"\");",
+									"    pm.collectionVariables.set(\"refresh_token\", \"\");",
+									"    console.log(\"Cleared access and refresh tokens on successful logout.\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": 4\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logs out the user by clearing the stored refresh token hash and session expiration in the database."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gateway",
+			"description": "Requests resolved or routed directly by the API Gateway.",
+			"item": [
+				{
+					"name": "Ping Auth Service",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ping-auth",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ping-auth"
+							]
+						},
+						"description": "Checks connection between API Gateway and Auth Service via RabbitMQ microservice communication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profile"
+							]
+						},
+						"description": "Retrieves the authenticated user's profile information using the Bearer JWT token."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

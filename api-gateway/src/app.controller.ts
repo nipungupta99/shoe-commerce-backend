@@ -28,9 +28,25 @@ export class AppController {
       this.authClient.send('login_user', body),
     );
   }
+  @Post('auth/refresh')
+  async refresh(@Body() body: any) {
+    return await firstValueFrom(
+      this.authClient.send('refresh_token', body),
+    );
+  }
+  @Post('auth/logout')
+  async logout(@Body() body: any) {
+    return await firstValueFrom(
+      this.authClient.send(
+        'logout_user',
+        body,
+      ),
+    );
+  }
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Req() req: any) {
     return req.user;
   }
+
 }
