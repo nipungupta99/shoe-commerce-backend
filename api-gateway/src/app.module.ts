@@ -27,6 +27,17 @@ console.log('APP MODULE LOADED');
           },
         },
       },
+      {
+        name: 'CATALOG_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://admin:admin@localhost:5672'],
+          queue: 'catalog_queue',
+          queueOptions: {
+            durable: true,
+          },
+        },
+      },
     ]),
   ],
   controllers: [AppController],

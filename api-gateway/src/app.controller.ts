@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Post, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, UseGuards, Req, Param, Query } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
@@ -7,6 +7,8 @@ export class AppController {
   constructor(
     @Inject('AUTH_SERVICE')
     private readonly authClient: ClientProxy,
+    @Inject('CATALOG_SERVICE')
+    private readonly catalogClient: ClientProxy,
   ) { }
 
   @Get('ping-auth')
@@ -49,4 +51,40 @@ export class AppController {
     return req.user;
   }
 
+  @Get('categories')
+  async getCategories() {
+    return await firstValueFrom(
+      this.catalogClient.send(
+        'get_categories',
+        {},
+      ),
+    );
+  }
+
+  @Get('products')
+  async getProducts(
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+    @Query('category') category?: string,
+    @Query('search') search?: string,
+    @Query('sort') sort?: string
+  ) {
+    return await firstValueFrom(
+      this.catalogClient.send(
+        'get_products',
+        { page: Number(page), limit: Number(limit), category, search },
+      ),
+    );
+  }
+  @Get('products/:slug')
+  async getProductBySlug(
+    @Param('slug') slug: string,
+  ) {
+    return await firstValueFrom(
+      this.catalogClient.send(
+        'get_product_by_slug',
+        { slug },
+      ),
+    );
+  }
 }
